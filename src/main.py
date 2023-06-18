@@ -18,6 +18,7 @@ if __name__ == '__main__':
 
     dataset = DataSet()
     dataset.remove_unclear_samples()
+    dataset.add_emotion_label()
     dataset.print_lines()
     dataset.data.to_csv('filtered_csv.csv', index=False)
 

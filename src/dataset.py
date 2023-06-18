@@ -18,32 +18,38 @@ class DataSet:
 		self.emotions_dict = {
 			"anger": {
 				"semantics_feelings": ["anger", "annoyance", "disapproval"],
-				"label": 0
+				"label": 0,
+				"samples_num": 0
 			},
-			"fear": {
-				"semantics_feelings": ["fear", "nervousness"],
-				"label": 1
+			"revulsion": {
+				"semantics_feelings": ["fear", "nervousness", "disgust"],
+				"label": 1,
+				"samples_num": 0
 			},
 			"joy": {
-				"semantics_feelings": ["joy", "amusement", "approval", "gratitude", "optimism", "relief",
-									   "pride", "admiration"],
-				"label": 2
+				"semantics_feelings": ["joy", "amusement", "approval", "gratitude", "optimism", "relief", "pride", "admiration"],
+				"label": 2,
+				"samples_num": 0
 			},
 			"passion": {
 				"semantics_feelings": ["excitement", "love", "caring", "desire"],
-				"label": 3
+				"label": 3,
+				"samples_num": 0
 			},
 			"sadness": {
 				"semantics_feelings": ["sadness", "disappointment", "embarrassment", "grief", "remorse"],
-				"label": 4
+				"label": 4,
+				"samples_num": 0
 			},
 			"surprise": {
 				"semantics_feelings": ["surprise", "realization", "confusion", "curiosity"],
-				"label": 5
+				"label": 5,
+				"samples_num": 0
 			},
-			"neutral":{
+			"neutral": {
 				"semantics_feelings": ["neutral"],
-				"label": 6
+				"label": 6,
+				"samples_num": 0
 			}
 		}
 
@@ -56,7 +62,26 @@ class DataSet:
 		self.data = self.data.drop_duplicates(subset=['text'])
 
 	def add_emotion_label(self):
-		pass
+		emotions_list = []
+		emotions_start_index = 8
+		# For each text, get the relevant emotion. If there are more than one, choose the first one
+		# ########### Need to explain it on presentation or compare to duplicate scenario
+		for index, row in self.data.iterrows():
+			columns_with_value_one = self.data.columns[emotions_start_index:][row[emotions_start_index:] == 1].tolist()
+			# create a duplication case afterwards
+			specific_emotion = columns_with_value_one[0]
+			for generic_emotion in self.emotions_dict:
+				if specific_emotion in self.emotions_dict[generic_emotion]["semantics_feelings"]:
+					emotions_list.append(generic_emotion)
+					self.emotions_dict[generic_emotion]["samples_num"] += 1
+					break
+		labels_list = [self.emotions_dict[emotion]["label"] for emotion in emotions_list]
+		self.data['Emotion'] = labels_list
+
+	def print_labels_count(self):
+		for generic_emotion in self.emotions_dict:
+			num_samples = self.emotions_dict[generic_emotion]["samples_num"]
+			print(f"number of samples for {generic_emotion} is {num_samples}")
 
 	def print_lines(self):
 		print(self.data.shape[0])
