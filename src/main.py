@@ -12,6 +12,7 @@ def check_gpu():
     # Get the name of the current GPU
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
+
 if __name__ == '__main__':
     # check_gpu()
     dataset = DataSet()

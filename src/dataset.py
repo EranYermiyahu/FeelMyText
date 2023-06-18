@@ -4,8 +4,6 @@ import pandas as pd
 from transformers import BertTokenizer
 from sklearn.model_selection import train_test_split
 
-# import torchtext.legacy.data as data
-# import torchtext.legacy.datasets as datasets
 
 class DataSet:
 	def __init__(self, path_to_data="../data/full_dataset/goemotions_1.csv"):
@@ -110,10 +108,10 @@ class DataSet:
 																				test_size=test_val_size,
 																				random_state=42)
 		test_from_val_size = test_size / (test_size + val_size)
-		inputs_val, inputs_test, labels_val, labels_test = train_test_split(inputs_temp,
-																			labels_temp,
-																			test_size=test_from_val_size,
-																			random_state=42)
+		inputs_val, inputs_test, labels_val, labels_test = train_test_split(inputs_temp['input_ids'],
+																				labels_temp,
+																				test_size=test_from_val_size,
+																				random_state=42)
 		print(f" train len is {len(inputs_train)}")
 		print(f" train ratio is {len(inputs_train)/total_samples}")
 		print(f" val len is {len(inputs_val)}")
