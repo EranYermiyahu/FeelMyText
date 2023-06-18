@@ -8,8 +8,7 @@ from sklearn.model_selection import train_test_split
 # import torchtext.legacy.datasets as datasets
 
 class DataSet:
-	def _init_(self, path_to_data="../data/full_dataset/goemotions_1.csv"):
-		path_to_data = path_to_data
+	def __init__(self, path_to_data="../data/full_dataset/goemotions_1.csv"):
 		# csv_data_list = glob.glob(path_to_data + '*.csv')
 		# self.dataframes = []
 		# for path in csv_data_list:
@@ -104,19 +103,25 @@ class DataSet:
 		self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
+		total_samples = len(self.tokenized_inputs['input_ids'])
 		test_val_size = test_size + val_size
 		inputs_train, inputs_temp, labels_train, labels_temp = train_test_split(self.tokenized_inputs['input_ids'],
 																				self.labels,
 																				test_size=test_val_size,
 																				random_state=42)
 		test_from_val_size = test_size / (test_size + val_size)
-		inputs_val, inputs_test, labels_val, labels_test = train_test_split(inputs_temp['input_ids'],
-																				labels_temp,
-																				test_size=test_from_val_size,
-																				random_state=42)
+		inputs_val, inputs_test, labels_val, labels_test = train_test_split(inputs_temp,
+																			labels_temp,
+																			test_size=test_from_val_size,
+																			random_state=42)
 		print(f" train len is {len(inputs_train)}")
+		print(f" train ratio is {len(inputs_train)/total_samples}")
 		print(f" val len is {len(inputs_val)}")
+		print(f" val ratio is {len(inputs_val)/total_samples}")
 		print(f" test len is {len(inputs_test)}")
+		print(f" test ratio is {len(inputs_test)/total_samples}")
+
+		total_samples
 
 	def get_max_text_length(self):
 		if self.max_text_len is not None:

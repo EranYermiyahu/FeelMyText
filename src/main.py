@@ -12,9 +12,8 @@ def check_gpu():
     # Get the name of the current GPU
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     # check_gpu()
-
     dataset = DataSet()
     dataset.remove_unclear_samples()
     dataset.add_emotion_label()
