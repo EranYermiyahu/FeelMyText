@@ -19,6 +19,7 @@ class DataSet:
 		self.labels = None
 		self.texts = None
 		self.tokenized_inputs = None
+		# self.attention_mask = None
 		self.max_text_len = None
 		self.duplicates = None
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
@@ -87,7 +88,7 @@ class DataSet:
 		labels_list = [self.emotions_dict[emotion]["label"] for emotion in emotions_list]
 		self.data['Emotion'] = labels_list
 		# Save the labels list and texts as tensors
-		self.labels = torch.tensor(labels_list)
+		self.labels = labels_list
 		self.texts = self.data['text'].values.tolist()
 
 	def print_labels_count(self):
@@ -101,6 +102,8 @@ class DataSet:
 
 		# Tokenize the sentences
 		self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+		# self.attention_mask = self.tokenized_inputs['attention_mask']
+		# print(self.attention_mask)
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
 		test_val_size = test_size + val_size
