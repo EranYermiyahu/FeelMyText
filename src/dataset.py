@@ -1,4 +1,5 @@
 import torch
+import os
 import glob
 import pandas as pd
 from torch.utils.data import TensorDataset, DataLoader
@@ -87,7 +88,7 @@ class DataSet:
 		labels_list = [self.emotions_dict[emotion]["label"] for emotion in emotions_list]
 		self.data['Emotion'] = labels_list
 		# Save the labels list and texts as tensors
-		self.labels = torch.tensor(labels_list)
+		self.labels = labels_list
 		self.texts = self.data['text'].values.tolist()
 
 	def print_labels_count(self):
@@ -96,11 +97,25 @@ class DataSet:
 			print(f"number of samples for {generic_emotion} is {num_samples}")
 
 	def tokenizer(self):
-		# Load the BERT tokenizer
-		tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+		if os.path.exists("./tokenizer"):
+			try:
+				tokenizer = BertTokenizer.from_pretrained("./tokenizer")
+				self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+				print("Loaded tokenizer from directory.")
+			
+			except:
+				print("Could not load tokenizer from directory. Training new tokenizer...")
+				tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+				self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+				tokenizer.save_pretrained("./tokenizer")
+		
+		else:
+			print("Directory does not exist. Training new tokenizer...")
+			tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+			self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+			tokenizer.save_pretrained("./tokenizer")
 
-		# Tokenize the sentences
-		self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+		
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
 		test_val_size = test_size + val_size
