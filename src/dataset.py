@@ -1,6 +1,7 @@
 import torch
 import glob
 import pandas as pd
+from torch.utils.data import TensorDataset, DataLoader
 from transformers import BertTokenizer
 from sklearn.model_selection import train_test_split
 
@@ -58,6 +59,7 @@ class DataSet:
 				"samples_num": 0
 			}
 		}
+		self.num_classes = len(self.emotions_dict)
 
 	def remove_unclear_samples(self):
 		# Remove all the unclear text from the data and the duplicates
@@ -102,17 +104,17 @@ class DataSet:
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
 		test_val_size = test_size + val_size
-		inputs_train, inputs_temp, labels_train, labels_temp = train_test_split(self.tokenized_inputs['input_ids'],
-																				self.labels,
-																				test_size=test_val_size,
-																				random_state=42)
+		dataset = TensorDataset(torch.tensor(self.tokenized_inputs['input_ids']), torch.tensor(self.labels))
+		train_dataset, temp_dataset = train_test_split(dataset, test_size=test_val_size, random_state=42)
 		test_from_val_size = test_size / (test_size + val_size)
-		inputs_val, inputs_test, labels_val, labels_test = train_test_split(inputs_temp, labels_temp,
-																				test_size=test_from_val_size,
-																				random_state=42)
-		print(f" train len is {len(inputs_train)}")
-		print(f" val len is {len(inputs_val)}")
-		print(f" test len is {len(inputs_test)}")
+		val_dataset, test_dataset = train_test_split(train_dataset, test_size=test_from_val_size, random_state=42)
+		return train_dataset, val_dataset, test_dataset
+
+	def create_data_loaders(self, train_dataset, val_dataset, test_dataset, batch_size):
+		train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+		test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+		val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+		return train_loader, test_loader, val_loader
 
 	def get_max_text_length(self):
 		if self.max_text_len is not None:
@@ -123,7 +125,7 @@ class DataSet:
 	def get_class_counts(self):
 		self.class_counts = self.data[self.class_columns].sum()
 		print(self.class_counts)
-		return self.class_counts	
+		return self.class_counts
 
 	def print_lines(self):
 		print(self.data.shape[0])
