@@ -1,6 +1,7 @@
 from transformers import BertModel
 import torch.nn as nn
 
+
 class EmotionClassifier(nn.Module):
     def __init__(self, n_classes):
         super(EmotionClassifier, self).__init__()
@@ -12,4 +13,3 @@ class EmotionClassifier(nn.Module):
         _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
         output = self.drop(pooled_output)
         return self.out(output)
-    

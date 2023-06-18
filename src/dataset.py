@@ -20,6 +20,7 @@ class DataSet:
 		self.labels = None
 		self.texts = None
 		self.tokenized_inputs = None
+		# self.attention_mask = None
 		self.max_text_len = None
 		self.duplicates = None
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
