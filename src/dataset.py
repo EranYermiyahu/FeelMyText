@@ -15,6 +15,7 @@ class DataSet:
 		# self.data = pd.concat(self.dataframes)
 		self.data = pd.read_csv(path_to_data)
 		self.duplicates = None
+		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
 		self.emotions_dict = {
 			"anger": {
 				"semantics_feelings": ["anger", "annoyance", "disapproval"],
@@ -82,6 +83,10 @@ class DataSet:
 		for generic_emotion in self.emotions_dict:
 			num_samples = self.emotions_dict[generic_emotion]["samples_num"]
 			print(f"number of samples for {generic_emotion} is {num_samples}")
+
+	def get_class_counts(self):
+		self.class_counts = self.data[self.class_columns].sum()
+		print(self.class_counts)		
 
 	def print_lines(self):
 		print(self.data.shape[0])
