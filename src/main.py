@@ -1,5 +1,6 @@
 
 import torch
+import pandas as pd
 from dataset import DataSet
 
 def check_gpu():
@@ -13,10 +14,12 @@ def check_gpu():
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
 if __name__ == '__main__':
-    check_gpu()
+    # check_gpu()
 
     dataset = DataSet()
-
+    dataset.remove_unclear_samples()
+    dataset.print_lines()
+    dataset.data.to_csv('filtered_csv.csv', index=False)
 
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
