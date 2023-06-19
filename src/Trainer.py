@@ -13,24 +13,20 @@ class Trainer:
         self.optimizer = torch.optim.Adam(self.model.parameters())
         self.criterion = nn.CrossEntropyLoss()
 
-    def forward_pass(self, inputs, labels):
-        # if self.attention_mask is not None:
-        #     outputs = self.model(inputs, self.attention_mask)
-        # else:
-
-        outputs = self.model(inputs)
+    def forward_pass(self, input_ids, attention_mask, labels):
+        outputs = self.model(input_ids, attention_mask)
         loss = self.criterion(outputs, labels)
         return outputs, loss
 
     def train(self, epochs):
         self.model.train()
-        # train_loader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
         for epoch in range(epochs):
             epoch_loss = 0.0
-            for i, (inputs, labels) in enumerate(self.train_loader):
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
+            for i, (input_ids, attention_mask, labels) in enumerate(self.train_loader):
+                print(f'batch {i+1}')
+                input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
-                _, loss = self.forward_pass(inputs, labels)
+                _, loss = self.forward_pass(input_ids, attention_mask, labels)
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()

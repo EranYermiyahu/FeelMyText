@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 
 class DataSet:
 	def __init__(self, path_to_data="../data/full_dataset/goemotions_1.csv"):
+	#def __init__(self, path_to_data="data/reduced_dataset/goemotions_small.csv"):
 		# csv_data_list = glob.glob(path_to_data + '*.csv')
 		# self.dataframes = []
 		# for path in csv_data_list:
@@ -120,10 +121,12 @@ class DataSet:
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
 		test_val_size = test_size + val_size
-		dataset = TensorDataset(torch.tensor(self.tokenized_inputs['input_ids']), torch.tensor(self.labels))
+		dataset = TensorDataset(torch.tensor(self.tokenized_inputs['input_ids']), 
+                            	torch.tensor(self.tokenized_inputs['attention_mask']), 
+                            	torch.tensor(self.labels))
 		train_dataset, temp_dataset = train_test_split(dataset, test_size=test_val_size, random_state=42)
 		test_from_val_size = test_size / (test_size + val_size)
-		val_dataset, test_dataset = train_test_split(train_dataset, test_size=test_from_val_size, random_state=42)
+		val_dataset, test_dataset = train_test_split(temp_dataset, test_size=test_from_val_size, random_state=42)
 		return train_dataset, val_dataset, test_dataset
 
 	def create_data_loaders(self, train_dataset, val_dataset, test_dataset, batch_size):
