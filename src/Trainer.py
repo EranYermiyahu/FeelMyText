@@ -35,17 +35,16 @@ class Trainer:
 
     def validate(self):
         self.model.eval()
-        # val_loader = DataLoader(self.val_loader, batch_size=self.batch_size, shuffle=False)
         with torch.no_grad():
             val_loss = 0.0
             correct_predictions = 0
-            for inputs, labels in self.val_loader:
-                inputs, labels = inputs.to(self.device), labels.to(self.device)
-                outputs, loss = self.forward_pass(inputs, labels)
+            for i, (input_ids, attention_mask, labels) in enumerate(self.val_loader):
+                input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
+                outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
                 _, preds = torch.max(outputs, dim=1)
                 correct_predictions += torch.sum(preds == labels)
                 val_loss += loss.item()
-            acc = correct_predictions.double() / len(self.self.val_loader)
+            acc = correct_predictions.double() / len(self.val_loader.dataset)
             print(f'Validation Loss: {val_loss / len(self.val_loader)}, Accuracy: {acc}')
 
     def save_model(self, path):
