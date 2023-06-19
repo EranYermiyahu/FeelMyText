@@ -1,21 +1,27 @@
 import torch
 from torch import nn
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 
+
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, device, batch_size=32):
+    def __init__(self, model, train_loader, val_loader, device, batch_size, learning_rate):
         self.device = device
         self.model = model.to(self.device)
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.batch_size = batch_size
         # self.attention_mask = attention_mask
-        self.optimizer = torch.optim.Adam(self.model.parameters())
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        decay_step_size = 10
+        decay_factor = 0.1
+        self.scheduler = StepLR(self.optimizer, step_size=decay_step_size, gamma=decay_factor)
         self.criterion = nn.CrossEntropyLoss()
 
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)
         loss = self.criterion(outputs, labels)
+
         return outputs, loss
 
     def train(self, epochs):
@@ -26,11 +32,14 @@ class Trainer:
                 print(f'batch {i+1}')
                 input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
-                _, loss = self.forward_pass(input_ids, attention_mask, labels)
+                outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
+                _, preds = torch.max(outputs, dim=1)
+                # print(f" preds is {preds} and label is {labels}")
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
             print(f'Epoch {epoch+1}, Loss: {epoch_loss / len(self.train_loader)}')
+            self.scheduler.step()
             self.validate()
 
     def validate(self):

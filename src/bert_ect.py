@@ -6,11 +6,11 @@ import torch.nn as nn
 
 
 class EmotionClassifier(nn.Module):
-    def __init__(self, n_classes):
+    def __init__(self, n_classes, dropout=0.3):
         super(EmotionClassifier, self).__init__()
-        #self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.bert = model = AutoModel.from_pretrained("nreimers/BERT-Tiny_L-2_H-128_A-2")
-        self.drop = nn.Dropout(p=0.3)
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        # self.bert = model = AutoModel.from_pretrained("nreimers/BERT-Tiny_L-2_H-128_A-2")
+        self.drop = nn.Dropout(p=dropout)
         self.out = nn.Linear(self.bert.config.hidden_size, n_classes)
 
     def forward(self, input_ids, attention_mask):

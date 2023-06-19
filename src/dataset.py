@@ -23,16 +23,17 @@ class DataSet:
 		self.tokenized_inputs = None
 		# self.attention_mask = None
 		self.max_text_len = None
+		self.vocab_size = None
 		self.duplicates = None
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
 		self.emotions_dict = {
 			"anger": {
-				"semantics_feelings": ["anger", "annoyance", "disapproval"],
+				"semantics_feelings": ["anger", "annoyance"],
 				"label": 0,
 				"samples_num": 0
 			},
 			"revulsion": {
-				"semantics_feelings": ["fear", "nervousness", "disgust"],
+				"semantics_feelings": ["fear", "nervousness", "disgust", "disapproval"],
 				"label": 1,
 				"samples_num": 0
 			},
@@ -116,8 +117,7 @@ class DataSet:
 			tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 			self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
 			tokenizer.save_pretrained("./tokenizer")
-
-		
+		self.vocab_size = tokenizer.vocab_size
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
 		test_val_size = test_size + val_size
