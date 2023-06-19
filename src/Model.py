@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class TransformerBlock(nn.Module):
     def __init__(self, embed_dim, num_heads, dropout, forward_expansion):
         super(TransformerBlock, self).__init__()
@@ -23,6 +24,7 @@ class TransformerBlock(nn.Module):
         forward = self.feed_forward(x)
         out = self.norm2(forward + x)
         return out
+
 
 class Encoder(nn.Module):
     def __init__(self, 

@@ -4,10 +4,10 @@ from torch.utils.data import DataLoader
 
 class Trainer:
     def __init__(self, model, train_loader, val_loader, device, batch_size=32):
-        self.model = model
+        self.device = device
+        self.model = model.to(self.device)
         self.train_loader = train_loader
         self.val_loader = val_loader
-        self.device = device
         self.batch_size = batch_size
         # self.attention_mask = attention_mask
         self.optimizer = torch.optim.Adam(self.model.parameters())
