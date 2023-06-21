@@ -14,7 +14,7 @@ class Trainer:
         # self.attention_mask = attention_mask
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         decay_step_size = 10
-        decay_factor = 0.1
+        decay_factor = 0.5
         self.scheduler = StepLR(self.optimizer, step_size=decay_step_size, gamma=decay_factor)
         self.criterion = nn.CrossEntropyLoss()
 
@@ -34,7 +34,7 @@ class Trainer:
                 self.optimizer.zero_grad()
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
                 _, preds = torch.max(outputs, dim=1)
-                # print(f" preds is {preds} and label is {labels}")
+                print(f" preds is {preds} and label is {labels}")
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
