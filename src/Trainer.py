@@ -34,7 +34,7 @@ class Trainer:
                 self.optimizer.zero_grad()
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
                 _, preds = torch.max(outputs, dim=1)
-                print(f" preds is {preds} and label is {labels}")
+                # print(f" preds is {preds} and label is {labels}")
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()

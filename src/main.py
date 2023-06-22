@@ -35,7 +35,7 @@ if __name__ == '__main__':
     train_dataset, val_dataset, test_dataset = dataset.split_train_test_val_data()
     # Create data loaders for train, test, and validation sets
     train_loader, test_loader, val_loader = dataset.create_data_loaders(train_dataset, val_dataset, test_dataset, BATCH_SIZE)
-    model = EmotionClassifier(dataset.num_classes, dropout=DROPOUT)
+    # model = EmotionClassifier(dataset.num_classes, dropout=DROPOUT)
 
     input_dim = dataset.vocab_size
     n_labels = dataset.num_classes
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     num_heads = 8
     dropout = 0.3
 
-    # model = TransformerECT(input_dim, n_labels, hidden_dim, num_layers, num_heads, dropout)
+    model = TransformerECT(input_dim, n_labels, hidden_dim, num_layers, num_heads, dropout)
     trainer = Trainer(model, train_loader, val_loader, device, BATCH_SIZE, LR)
     trainer.train(EPOCHS)
 
