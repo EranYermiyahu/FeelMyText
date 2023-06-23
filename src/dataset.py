@@ -87,9 +87,6 @@ class DataSet:
 		if force_equality:
 			min_samples = min(self.count_labels(to_stdout=False))
 
-
-
-
 	def remove_unclear_samples(self):
 		# Remove all the unclear text from the data and the duplicates
 		self.data = self.data[self.data["example_very_unclear"] != True]
@@ -146,7 +143,7 @@ class DataSet:
 		# self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
 		self.tokenized_inputs = tokenizer.batch_encode_plus(self.texts, add_special_tokens=True,
 															return_attention_mask=True, pad_to_max_length=True,
-															max_length=256, return_tensors='pt')
+															max_length=self.get_max_text_length(), return_tensors='pt')
 		self.vocab_size = tokenizer.vocab_size
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):

@@ -29,7 +29,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     dataset = DataSet()
-    dataset.preprocessing_data(generate_from_scratch=False, data_augmentation=True, force_equality=False)
+    dataset.preprocessing_data(generate_from_scratch=False, data_augmentation=False, force_equality=False)
     # dataset.remove_unclear_samples()
     # dataset.add_emotion_label()
     dataset.count_labels()
