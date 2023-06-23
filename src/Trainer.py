@@ -61,3 +61,21 @@ class Trainer:
 
     def load_model(self, path):
         self.model.load_state_dict(torch.load(path))
+
+    def calculate_accuracy(self, testloader):
+        self.model.eval()  # Set the model to evaluation mode
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for i, (input_ids, attention_mask, labels) in enumerate(testloader):
+                input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
+                outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
+                _, predicted = torch.max(outputs.data, 1)  # Get the predicted labels
+
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        accuracy = 100 * correct / total
+        return accuracy
+
