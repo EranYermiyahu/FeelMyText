@@ -26,6 +26,7 @@ class DataSet:
 		self.vocab_size = None
 		self.duplicates = None
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
+		self.generic_emotions_list = ['anger', 'revulsion', 'joy', 'passion', 'sadness', 'surprise', 'neutral']
 		self.emotions_dict = {
 			"anger": {
 				"semantics_feelings": ["anger", "annoyance"],
@@ -65,6 +66,30 @@ class DataSet:
 		}
 		self.num_classes = len(self.emotions_dict)
 
+	def preprocessing_data(self, generate_from_scratch=False, data_augmentation=False, force_equality=False):
+		if generate_from_scratch and data_augmentation:
+			raise ValueError("Augmented Data created before using GPT prompt, get it from full_data")
+		if data_augmentation:
+			data_file_path = "../data/augmented_data/augmented_data_complete.csv"
+		else:
+			data_file_path = "../data/full_dataset/origin_data_proccessed.csv"
+
+		if generate_from_scratch:
+			self.remove_unclear_samples()
+			self.add_emotion_label()
+		else:
+			self.data = pd.read_csv(data_file_path)
+			self.labels = self.data['Emotion'].values.tolist()
+			self.texts = self.data['text'].values.tolist()
+			for label in self.labels:
+				self.emotions_dict[self.generic_emotions_list[label]]["samples_num"] += 1
+
+		if force_equality:
+			min_samples = min(self.count_labels(to_stdout=False))
+
+
+
+
 	def remove_unclear_samples(self):
 		# Remove all the unclear text from the data and the duplicates
 		self.data = self.data[self.data["example_very_unclear"] != True]
@@ -94,10 +119,14 @@ class DataSet:
 		self.labels = labels_list
 		self.texts = self.data['text'].values.tolist()
 
-	def print_labels_count(self):
+	def count_labels(self, to_stdout=True):
+		num_samples_list = []
 		for generic_emotion in self.emotions_dict:
 			num_samples = self.emotions_dict[generic_emotion]["samples_num"]
-			print(f"number of samples for {generic_emotion} is {num_samples}")
+			num_samples_list.append(num_samples)
+			if to_stdout:
+				print(f"number of samples for {generic_emotion} is {num_samples}")
+		return num_samples_list
 
 	def tokenizer(self):
 		if os.path.exists("./tokenizer"):
