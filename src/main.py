@@ -19,17 +19,17 @@ def check_gpu():
 
 
 BATCH_SIZE = 64
-EPOCHS = 5
-LR_LIST = [2e-6, 2e-5, 2e-4]
-DROPOUT = 0.3
+EPOCHS = 10
+LR_LIST = [2e-5, 2e-6]
+DROPOUT = 0.2
 
 
 if __name__ == '__main__':
-    # check_gpu()
+    check_gpu()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     dataset = DataSet()
-    dataset.preprocessing_data(generate_from_scratch=False, data_augmentation=False, force_equality=False)
+    dataset.preprocessing_data(generate_from_scratch=False, data_augmentation=True, force_equality=False)
     # dataset.remove_unclear_samples()
     # dataset.add_emotion_label()
     dataset.count_labels()
@@ -60,6 +60,7 @@ if __name__ == '__main__':
         accuracy = trainer.calculate_accuracy(test_loader)
         accuracy_list.append(accuracy)
         print(f"For LR {LR} the model accuracy on test is {accuracy}")
+        trainer.save_model(f"../data/model_LR_{LR}")
 
 
 

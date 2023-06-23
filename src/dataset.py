@@ -79,6 +79,7 @@ class DataSet:
 			self.add_emotion_label()
 		else:
 			self.data = pd.read_csv(data_file_path)
+			self.data = self.data.sample(frac=1).reset_index(drop=True)
 			self.labels = self.data['Emotion'].values.tolist()
 			self.texts = self.data['text'].values.tolist()
 			for label in self.labels:
@@ -143,7 +144,9 @@ class DataSet:
 		# self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
 		self.tokenized_inputs = tokenizer.batch_encode_plus(self.texts, add_special_tokens=True,
 															return_attention_mask=True, pad_to_max_length=True,
-															max_length=self.get_max_text_length(), return_tensors='pt')
+															truncation=True,
+															max_length=min(self.get_max_text_length(), 512),
+															return_tensors='pt')
 		self.vocab_size = tokenizer.vocab_size
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
