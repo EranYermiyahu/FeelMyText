@@ -20,10 +20,10 @@ class TransformerECT(nn.Module):
     def forward(self, src, mask):
         embedded = self.embedding(src.transpose(0, 1))
         encoded = self.positional_encoding(embedded)
+        encoded = self.layer_norm(encoded)
 
         output = self.transformer_encoder(encoded, src_key_padding_mask=mask.float())
 
-        output = self.layer_norm(output)
         pooled = output.mean(dim=0)  # Average pooling over the sequence dimension
         logits = self.fc(pooled)
 
