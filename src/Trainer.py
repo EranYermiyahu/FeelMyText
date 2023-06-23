@@ -1,4 +1,5 @@
 import torch
+from tqdm import tqdm
 from torch import nn
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
@@ -28,31 +29,32 @@ class Trainer:
         self.model.train()
         for epoch in range(epochs):
             epoch_loss = 0.0
-            for i, (input_ids, attention_mask, labels) in enumerate(self.train_loader):
-                print(f'batch {i+1}')
+            progress_bar = tqdm(self.train_loader, desc=f"Training Epoch {epoch+1}")
+            for i, (input_ids, attention_mask, labels) in enumerate(progress_bar):
                 input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
                 _, preds = torch.max(outputs, dim=1)
-                # print(f" preds is {preds} and label is {labels}")
                 loss.backward()
                 self.optimizer.step()
                 epoch_loss += loss.item()
-            print(f'Epoch {epoch+1}, Loss: {epoch_loss / len(self.train_loader)}')
+                progress_bar.set_description(f"Training Epoch {epoch+1}, Loss: {epoch_loss / (i+1)}")
             self.scheduler.step()
             self.validate()
 
     def validate(self):
         self.model.eval()
+        progress_bar = tqdm(self.val_loader, desc="Validating")
         with torch.no_grad():
             val_loss = 0.0
             correct_predictions = 0
-            for i, (input_ids, attention_mask, labels) in enumerate(self.val_loader):
+            for i, (input_ids, attention_mask, labels) in enumerate(progress_bar):
                 input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
                 _, preds = torch.max(outputs, dim=1)
                 correct_predictions += torch.sum(preds == labels)
                 val_loss += loss.item()
+                progress_bar.set_description(f"Validating, Loss: {val_loss / (i+1)}, Accuracy: {correct_predictions.double() / ((i+1)*self.batch_size)}")
             acc = correct_predictions.double() / len(self.val_loader.dataset)
             print(f'Validation Loss: {val_loss / len(self.val_loader)}, Accuracy: {acc}')
 
@@ -78,4 +80,3 @@ class Trainer:
 
         accuracy = 100 * correct / total
         return accuracy
-
