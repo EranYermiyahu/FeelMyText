@@ -35,7 +35,8 @@ if __name__ == '__main__':
     train_dataset, val_dataset, test_dataset = dataset.split_train_test_val_data()
     # Create data loaders for train, test, and validation sets
     train_loader, test_loader, val_loader = dataset.create_data_loaders(train_dataset, val_dataset, test_dataset, BATCH_SIZE)
-    model = EmotionClassifier(dataset.num_classes, dropout=DROPOUT)
+    # model = EmotionClassifier(dataset.num_classes, dropout=DROPOUT)
+    model = EmotionClassifier(dataset.num_classes)
 
     input_dim = dataset.vocab_size
     n_labels = dataset.num_classes
