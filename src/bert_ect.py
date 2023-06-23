@@ -8,7 +8,13 @@ import torch.nn as nn
 class EmotionClassifier(nn.Module):
     def __init__(self, n_classes, dropout=0.3):
         super(EmotionClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        # self.bert = BertModel.from_pretrained('bert-base-uncased')
+        # self.bert = BertForSequenceClassification.from_pretrained(
+        #     'bert-base-uncased',
+        #     num_labels=len(n_classes),
+        #     output_attentions=False,
+        #     output_hidden_states=True
+        # )
         for param in self.bert.parameters():
             param.requires_grad = False  # Freeze BERT parameters
         self.drop = nn.Dropout(p=dropout)
