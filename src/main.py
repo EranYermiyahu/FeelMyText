@@ -17,9 +17,9 @@ def check_gpu():
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
 
-BATCH_SIZE = 128
-EPOCHS = 50
-LR_LIST = [2e-3, 2e-4, 2e-5]
+BATCH_SIZE = 1024
+EPOCHS = 5
+LR_LIST = [2e-2, 2e-3, 2e-4]
 DROPOUT = 0.3
 
 

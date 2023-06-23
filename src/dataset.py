@@ -103,20 +103,21 @@ class DataSet:
 		if os.path.exists("./tokenizer"):
 			try:
 				tokenizer = BertTokenizer.from_pretrained("./tokenizer")
-				self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
 				print("Loaded tokenizer from directory.")
-			
+
 			except:
 				print("Could not load tokenizer from directory. Training new tokenizer...")
 				tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-				self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
 				tokenizer.save_pretrained("./tokenizer")
-		
+
 		else:
 			print("Directory does not exist. Training new tokenizer...")
-			tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-			self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+			tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
 			tokenizer.save_pretrained("./tokenizer")
+		# self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
+		self.tokenized_inputs = tokenizer.batch_encode_plus(self.texts, add_special_tokens=True,
+															return_attention_mask=True, pad_to_max_length=True,
+															max_length=256, return_tensors='pt')
 		self.vocab_size = tokenizer.vocab_size
 
 	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
