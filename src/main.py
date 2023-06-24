@@ -3,6 +3,7 @@ import pandas as pd
 from dataset import DataSet
 from bert_ect import EmotionClassifier
 from Trainer import Trainer
+from transformers import BertForSequenceClassification
 from Model import TransformerECT
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -24,13 +25,14 @@ DROPOUT = 0.3
 
 
 if __name__ == '__main__':
-    #check_gpu()
+    check_gpu()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
     dataset = DataSet()
-    dataset.remove_unclear_samples()
-    dataset.add_emotion_label()
-    dataset.print_labels_count()
+    dataset.preprocessing_data(generate_from_scratch=False, data_augmentation=True, force_equality=False)
+    # dataset.remove_unclear_samples()
+    # dataset.add_emotion_label()
+    dataset.count_labels()
     dataset.tokenizer()
     train_dataset, val_dataset, test_dataset = dataset.split_train_test_val_data()
     # Create data loaders for train, test, and validation sets
@@ -46,12 +48,19 @@ if __name__ == '__main__':
     # model = TransformerECT(input_dim, n_labels, hidden_dim, num_layers, num_heads, dropout)
     accuracy_list = []
     for LR in LR_LIST:
-        model = EmotionClassifier(dataset.num_classes, dropout=DROPOUT)
-        trainer = Trainer(model, train_loader, val_loader, device, BATCH_SIZE, LR)
-        trainer.train(EPOCHS)
+        model = BertForSequenceClassification.from_pretrained(
+            'bert-base-uncased',
+            num_labels=dataset.num_classes,
+            output_attentions=False,
+            output_hidden_states=False
+        )
+        # model = EmotionClassifier(dataset.num_classes, dropout=DROPOUT)
+        trainer = Trainer(model, train_loader, val_loader, device, BATCH_SIZE, EPOCHS, LR)
+        trainer.train()
         accuracy = trainer.calculate_accuracy(test_loader)
         accuracy_list.append(accuracy)
         print(f"For LR {LR} the model accuracy on test is {accuracy}")
+        trainer.save_model(f"../data/model_LR_{LR}")
 
 
 
