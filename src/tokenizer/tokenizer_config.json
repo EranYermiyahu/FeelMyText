@@ -1,15 +1,64 @@
 {
+  "add_prefix_space": false,
+  "bos_token": {
+    "__type": "AddedToken",
+    "content": "<s>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
   "clean_up_tokenization_spaces": true,
-  "cls_token": "[CLS]",
-  "do_basic_tokenize": true,
+  "cls_token": {
+    "__type": "AddedToken",
+    "content": "<s>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
   "do_lower_case": true,
-  "mask_token": "[MASK]",
+  "eos_token": {
+    "__type": "AddedToken",
+    "content": "</s>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "errors": "replace",
+  "mask_token": {
+    "__type": "AddedToken",
+    "content": "<mask>",
+    "lstrip": true,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
   "model_max_length": 512,
-  "never_split": null,
-  "pad_token": "[PAD]",
-  "sep_token": "[SEP]",
-  "strip_accents": null,
-  "tokenize_chinese_chars": true,
-  "tokenizer_class": "BertTokenizer",
-  "unk_token": "[UNK]"
+  "pad_token": {
+    "__type": "AddedToken",
+    "content": "<pad>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "sep_token": {
+    "__type": "AddedToken",
+    "content": "</s>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  },
+  "tokenizer_class": "RobertaTokenizer",
+  "unk_token": {
+    "__type": "AddedToken",
+    "content": "<unk>",
+    "lstrip": false,
+    "normalized": true,
+    "rstrip": false,
+    "single_word": false
+  }
 }

@@ -1,15 +1,15 @@
 import torch
 import os
 import glob
+import random
 import pandas as pd
-from collections import Counter
 from torch.utils.data import TensorDataset, DataLoader
-from transformers import BertTokenizer
+
 from sklearn.model_selection import train_test_split
 
 
 class DataSet:
-	def __init__(self, path_to_data="goemotions_1.csv"):
+	def __init__(self, tokenizer, path_to_data="../data/full_dataset/goemotions_1.csv"):
 	#def __init__(self, path_to_data="data/reduced_dataset/goemotions_small.csv"):
 		# csv_data_list = glob.glob(path_to_data + '*.csv')
 		# self.dataframes = []
@@ -19,14 +19,16 @@ class DataSet:
 		# 	self.dataframes.append(df)
 		# self.data = pd.concat(self.dataframes)
 		self.data = pd.read_csv(path_to_data)
+		self.tokenizer = tokenizer
 		self.labels = None
 		self.texts = None
 		self.tokenized_inputs = None
 		# self.attention_mask = None
 		self.max_text_len = None
-		self.vocab_size = None
+		self.vocab_size = self.tokenizer.vocab_size
 		self.duplicates = None
 		self.generalize_emotions_flag = False
+		self.num_classes = None
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
 		self.generic_emotions_list = ['anger', 'revulsion', 'joy', 'passion', 'sadness', 'surprise', 'neutral']
 		self.emotions_dict = {
@@ -66,7 +68,6 @@ class DataSet:
 				"samples_num": 0
 			}
 		}
-		self.num_classes = None
 
 	def preprocessing_data(self, generate_from_scratch=False, data_augmentation=False, force_equality=False):
 		if generate_from_scratch and data_augmentation:
@@ -84,6 +85,8 @@ class DataSet:
 			self.data = self.data.sample(frac=1).reset_index(drop=True)
 			self.labels = self.data['Emotion'].values.tolist()
 			self.texts = self.data['text'].values.tolist()
+			self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(
+				self.generic_emotions_list)
 			for label in self.labels:
 				self.emotions_dict[self.generic_emotions_list[label]]["samples_num"] += 1
 
@@ -121,7 +124,7 @@ class DataSet:
 		# Save the labels list and texts as tensors
 		self.labels = emotions_list
 		self.texts = self.data['text'].values.tolist()
-		self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(self.emotions_dict)
+		self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(self.generic_emotions_list)
 
 	def count_labels(self, to_stdout=True):
 		if self.generalize_emotions_flag:
@@ -141,43 +144,23 @@ class DataSet:
 		return num_samples_list
 
 	def tokenizer(self):
-		if os.path.exists("./tokenizer"):
-			try:
-				tokenizer = BertTokenizer.from_pretrained("./tokenizer")
-				print("Loaded tokenizer from directory.")
-
-			except:
-				print("Could not load tokenizer from directory. Training new tokenizer...")
-				tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-				tokenizer.save_pretrained("./tokenizer")
-
-		else:
-			print("Directory does not exist. Training new tokenizer...")
-			tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-			tokenizer.save_pretrained("./tokenizer")
-		# self.tokenized_inputs = tokenizer(self.texts, padding=True, truncation=True, max_length=self.get_max_text_length())
-		self.tokenized_inputs = tokenizer.batch_encode_plus(self.texts, add_special_tokens=True,
+		self.tokenized_inputs = self.tokenizer.batch_encode_plus(self.texts, add_special_tokens=True,
 															return_attention_mask=True, pad_to_max_length=True,
 															truncation=True,
 															max_length=min(self.get_max_text_length(), 512),
 															return_tensors='pt')
-		self.vocab_size = tokenizer.vocab_size
 
-	def split_train_test_val_data(self, test_size=0.15, val_size=0.15):
-		test_val_size = test_size + val_size
-		dataset = TensorDataset(torch.tensor(self.tokenized_inputs['input_ids']), 
+	def split_train_val_data(self, val_size=0.15):
+		dataset = TensorDataset(torch.tensor(self.tokenized_inputs['input_ids']),
                             	torch.tensor(self.tokenized_inputs['attention_mask']), 
                             	torch.tensor(self.labels))
-		train_dataset, temp_dataset = train_test_split(dataset, test_size=test_val_size, random_state=42)
-		test_from_val_size = test_size / (test_size + val_size)
-		val_dataset, test_dataset = train_test_split(temp_dataset, test_size=test_from_val_size, random_state=42)
-		return train_dataset, val_dataset, test_dataset
+		train_dataset, val_dataset = train_test_split(dataset, test_size=val_size, random_state=42)
+		return train_dataset, val_dataset
 
-	def create_data_loaders(self, train_dataset, val_dataset, test_dataset, batch_size):
+	def create_data_loaders(self, train_dataset, val_dataset, batch_size):
 		train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-		test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 		val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-		return train_loader, test_loader, val_loader
+		return train_loader, val_loader
 
 	def get_max_text_length(self):
 		if self.max_text_len is not None:
@@ -192,4 +175,7 @@ class DataSet:
 
 	def print_lines(self):
 		print(self.data.shape[0])
+
+
+
 

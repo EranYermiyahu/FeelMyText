@@ -16,7 +16,6 @@ class Trainer:
         self.val_loader = val_loader
         self.batch_size = batch_size
         self.epochs = epochs
-        self.epochs =epochs
         # self.attention_mask = attention_mask
         self.optimizer = AdamW(self.model.parameters(), lr=learning_rate, eps=1e-8)
         # decay_step_size = 10
@@ -31,7 +30,9 @@ class Trainer:
         outputs = self.model(input_ids, attention_mask)
         # print(outputs.shape)
         # print(outputs)
+        ######
         outputs = outputs.logits
+        ######
         loss = self.criterion(outputs, labels)
 
         return outputs, loss
@@ -75,13 +76,16 @@ class Trainer:
     def load_model(self, path):
         self.model.load_state_dict(torch.load(path))
 
-    def calculate_accuracy(self, testloader):
+    def calculate_accuracy(self, testloader, early_stop=None):
         self.model.eval()  # Set the model to evaluation mode
         correct = 0
         total = 0
 
         with torch.no_grad():
             for i, (input_ids, attention_mask, labels) in enumerate(testloader):
+                if early_stop is not None:
+                    if i == early_stop:
+                        break
                 input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
                 _, predicted = torch.max(outputs.data, 1)  # Get the predicted labels
@@ -91,36 +95,3 @@ class Trainer:
 
         accuracy = 100 * correct / total
         return accuracy
-    #
-    # def evaluate(self, testloader):
-    #
-    #     self.model.eval()
-    #
-    #     loss_val_total = 0
-    #     predictions, true_vals = [], []
-    #
-    #     for batch in tqdm(testloader):
-    #         batch = tuple(b.to(self.device) for b in batch)
-    #
-    #         inputs = {'input_ids': batch[0],
-    #                   'attention_mask': batch[1],
-    #                   'labels': batch[2],
-    #                   }
-    #
-    #         with torch.no_grad():
-    #             outputs = self.model(**inputs)
-    #
-    #         loss = outputs[0]
-    #         logits = outputs[1]
-    #         loss_val_total += loss.item()
-    #         logits = logits.detach().cpu().numpy()
-    #         label_ids = inputs['labels'].cpu().numpy()
-    #         predictions.append(logits)
-    #         true_vals.append(label_ids)
-    #
-    #     loss_val_avg = loss_val_total / len(testloader)
-    #
-    #     predictions = np.concatenate(predictions, axis=0)
-    #     true_vals = np.concatenate(true_vals, axis=0)
-    #
-    #     return loss_val_avg, predictions, true_vals

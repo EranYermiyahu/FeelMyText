@@ -6,15 +6,21 @@ import torch.nn as nn
 
 
 class EmotionClassifier(nn.Module):
-    def __init__(self, num_classes, dropout):
+    def __init__(self, num_classes, dropout, feature_extracting=True):
         super(EmotionClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
-        for param in self.bert.parameters():
-            param.requires_grad = False  # Freeze BERT parameters
+        # self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.bert = BertForSequenceClassification.from_pretrained(
+            'bert-base-uncased',
+            num_labels=28,
+            output_attentions=False,
+            output_hidden_states=False
+        )
+        if feature_extracting:
+            for param in self.bert.parameters():
+                param.requires_grad = False  # Freeze BERT parameters
         self.drop = nn.Dropout(p=dropout)
-        self.fc1 = nn.Linear(7, num_classes * 4)  # Change the input size to 768
-        self.fc2 = nn.Linear(num_classes * 4, num_classes * 2)
-        self.out = nn.Linear(num_classes * 2, num_classes)
+        self.fc1 = nn.Linear(28, 28)
+        self.out = nn.Linear(28, num_classes)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
@@ -22,9 +28,7 @@ class EmotionClassifier(nn.Module):
         bert_dropped = self.drop(logits)
         out1 = self.fc1(bert_dropped)
         pooled_out1 = self.drop(out1)
-        out2 = self.fc2(pooled_out1)
-        pooled_out2 = self.drop(out2)
-        output = self.out(pooled_out2)
+        output = self.out(pooled_out1)
         return output
     
 
