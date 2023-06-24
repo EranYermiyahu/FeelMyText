@@ -3,21 +3,26 @@ from tqdm import tqdm
 from torch import nn
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
+from transformers import get_linear_schedule_with_warmup, AdamW
 
 
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, device, batch_size, learning_rate):
+    def __init__(self, model, train_loader, val_loader, device, batch_size, learning_rate, epochs):
         self.device = device
         self.model = model.to(self.device)
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.batch_size = batch_size
+        self.epochs = epochs
         # self.attention_mask = attention_mask
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        self.optimizer = AdamW(model.parameters(), lr = learning_rate, eps = 1e-8)
         decay_step_size = 10
         decay_factor = 0.5
-        self.scheduler = StepLR(self.optimizer, step_size=decay_step_size, gamma=decay_factor)
+        #self.scheduler = StepLR(self.optimizer, step_size=decay_step_size, gamma=decay_factor)
+        self.scheduler = get_linear_schedule_with_warmup(self.optimizer,num_warmup_steps=0,num_training_steps = len(train_loader)*self.epochs)
         self.criterion = nn.CrossEntropyLoss()
+
 
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)

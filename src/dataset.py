@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 
 class DataSet:
-	def __init__(self, path_to_data="../data/full_dataset/goemotions_1.csv"):
+	def __init__(self, path_to_data="goemotions_1.csv"):
 	#def __init__(self, path_to_data="data/reduced_dataset/goemotions_small.csv"):
 		# csv_data_list = glob.glob(path_to_data + '*.csv')
 		# self.dataframes = []
