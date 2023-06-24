@@ -66,7 +66,7 @@ class DataSet:
 				"samples_num": 0
 			}
 		}
-		self.num_classes = len(self.emotions_dict)
+		self.num_classes = None
 
 	def preprocessing_data(self, generate_from_scratch=False, data_augmentation=False, force_equality=False):
 		if generate_from_scratch and data_augmentation:
@@ -121,6 +121,7 @@ class DataSet:
 		# Save the labels list and texts as tensors
 		self.labels = emotions_list
 		self.texts = self.data['text'].values.tolist()
+		self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(self.emotions_dict)
 
 	def count_labels(self, to_stdout=True):
 		if self.generalize_emotions_flag:
