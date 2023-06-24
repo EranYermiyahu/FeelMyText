@@ -18,25 +18,15 @@ class Trainer:
         self.train_losses_list = []
         self.val_acc_list = []
         self.epochs = epochs
-        # self.attention_mask = attention_mask
         self.optimizer = AdamW(self.model.parameters(), lr=learning_rate, eps=1e-8)
-        # decay_step_size = 10
-        # decay_factor = 0.5
-        # self.scheduler = StepLR(self.optimizer, step_size=decay_step_size, gamma=decay_factor)
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer, num_warmup_steps=0,
                                                          num_training_steps=len(train_loader) * self.epochs)
         self.criterion = nn.CrossEntropyLoss()
 
-
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)
-        # print(outputs.shape)
-        # print(outputs)
-        ######
         outputs = outputs.logits
-        ######
         loss = self.criterion(outputs, labels)
-
         return outputs, loss
 
     def train(self):
@@ -83,19 +73,19 @@ class Trainer:
         self.model.load_state_dict(torch.load(path))
 
     def calculate_accuracy(self, testloader, early_stop=None):
-        self.model.eval()  # Set the model to evaluation mode
+        self.model.eval()
         correct = 0
         total = 0
 
         with torch.no_grad():
-            for i, (input_ids, attention_mask, labels) in enumerate(testloader):
+            progress_bar = tqdm(testloader, desc="Calculating Accuracy")
+            for i, (input_ids, attention_mask, labels) in enumerate(progress_bar):
                 if early_stop is not None:
                     if i == early_stop:
                         break
                 input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
-                _, predicted = torch.max(outputs.data, 1)  # Get the predicted labels
-
+                _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
