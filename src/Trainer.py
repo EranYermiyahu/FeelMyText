@@ -15,6 +15,8 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.batch_size = batch_size
+        self.train_losses_list = []
+        self.val_acc_list = []
         self.epochs = epochs
         # self.attention_mask = attention_mask
         self.optimizer = AdamW(self.model.parameters(), lr=learning_rate, eps=1e-8)
@@ -52,7 +54,10 @@ class Trainer:
                 epoch_loss += loss.item()
                 progress_bar.set_description(f"Training Epoch {epoch+1}, Loss: {epoch_loss / (i+1)}")
             self.scheduler.step()
-            self.validate()
+            self.train_losses_list.append(epoch_loss)
+            epoch_val_acc = self.validate()
+            self.val_acc_list.append(epoch_val_acc)
+        return self.train_losses_list, self.val_acc_list
 
     def validate(self):
         self.model.eval()
@@ -69,6 +74,7 @@ class Trainer:
                 progress_bar.set_description(f"Validating, Loss: {val_loss / (i+1)}, Accuracy: {correct_predictions.double() / ((i+1)*self.batch_size)}")
             acc = correct_predictions.double() / len(self.val_loader.dataset)
             print(f'Validation Loss: {val_loss / len(self.val_loader)}, Accuracy: {acc}')
+            return acc
 
     def save_model(self, path):
         torch.save(self.model.state_dict(), path)
