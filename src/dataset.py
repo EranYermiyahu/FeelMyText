@@ -2,6 +2,7 @@ import torch
 import os
 import glob
 import pandas as pd
+from collections import Counter
 from torch.utils.data import TensorDataset, DataLoader
 from transformers import BertTokenizer
 from sklearn.model_selection import train_test_split
@@ -25,6 +26,7 @@ class DataSet:
 		self.max_text_len = None
 		self.vocab_size = None
 		self.duplicates = None
+		self.generalize_emotions_flag = False
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
 		self.generic_emotions_list = ['anger', 'revulsion', 'joy', 'passion', 'sadness', 'surprise', 'neutral']
 		self.emotions_dict = {
@@ -76,7 +78,7 @@ class DataSet:
 
 		if generate_from_scratch:
 			self.remove_unclear_samples()
-			self.add_emotion_label()
+			self.add_emotion_label(generalize_emotions=False)
 		else:
 			self.data = pd.read_csv(data_file_path)
 			self.data = self.data.sample(frac=1).reset_index(drop=True)
@@ -96,7 +98,8 @@ class DataSet:
 		self.duplicates = self.data[self.data.duplicated(subset=['text'])]
 		self.data = self.data.drop_duplicates(subset=['text'])
 
-	def add_emotion_label(self):
+	def add_emotion_label(self, generalize_emotions=True):
+		self.generalize_emotions_flag = generalize_emotions
 		emotions_list = []
 		emotions_start_index = 8
 		# For each text, get the relevant emotion. If there are more than one, choose the first one
@@ -105,25 +108,35 @@ class DataSet:
 			columns_with_value_one = self.data.columns[emotions_start_index:][row[emotions_start_index:] == 1].tolist()
 			# create a duplication case afterwards
 			specific_emotion = columns_with_value_one[0]
-			for generic_emotion in self.emotions_dict:
-				if specific_emotion in self.emotions_dict[generic_emotion]["semantics_feelings"]:
-					emotions_list.append(generic_emotion)
-					self.emotions_dict[generic_emotion]["samples_num"] += 1
-					break
-		# Save labels inside the data
-		labels_list = [self.emotions_dict[emotion]["label"] for emotion in emotions_list]
-		self.data['Emotion'] = labels_list
+			if generalize_emotions:
+				for generic_emotion in self.emotions_dict:
+					if specific_emotion in self.emotions_dict[generic_emotion]["semantics_feelings"]:
+						generic_emotion_label = self.emotions_dict[generic_emotion]["label"]
+						emotions_list.append(generic_emotion_label)
+						self.emotions_dict[generic_emotion]["samples_num"] += 1
+						break
+			else:
+				emotions_list.append(self.data.columns.get_loc(specific_emotion) - (emotions_start_index + 1))
+		self.data['Emotion'] = emotions_list
 		# Save the labels list and texts as tensors
-		self.labels = labels_list
+		self.labels = emotions_list
 		self.texts = self.data['text'].values.tolist()
 
 	def count_labels(self, to_stdout=True):
-		num_samples_list = []
-		for generic_emotion in self.emotions_dict:
-			num_samples = self.emotions_dict[generic_emotion]["samples_num"]
-			num_samples_list.append(num_samples)
+		if self.generalize_emotions_flag:
+			num_samples_list = []
+			for generic_emotion in self.emotions_dict:
+				num_samples = self.emotions_dict[generic_emotion]["samples_num"]
+				num_samples_list.append(num_samples)
+				if to_stdout:
+					print(f"number of samples for {generic_emotion} is {num_samples}")
+		else:
+			num_samples_list = [0] * (max(self.labels) + 1)
+			for lbl in self.labels:
+				num_samples_list[lbl] += 1
 			if to_stdout:
-				print(f"number of samples for {generic_emotion} is {num_samples}")
+				for lbl, lbl_rep in enumerate(num_samples_list):
+					print(f"number of samples for {self.class_columns[lbl]} is {lbl_rep}")
 		return num_samples_list
 
 	def tokenizer(self):
