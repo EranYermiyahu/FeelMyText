@@ -17,7 +17,6 @@
     "rstrip": false,
     "single_word": false
   },
-  "do_lower_case": true,
   "eos_token": {
     "__type": "AddedToken",
     "content": "</s>",

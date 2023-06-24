@@ -27,7 +27,7 @@ class DataSet:
 		self.max_text_len = None
 		self.vocab_size = self.tokenizer.vocab_size
 		self.duplicates = None
-		self.generalize_emotions_flag = False
+		self.generalize_emotions_flag = True
 		self.num_classes = None
 		self.class_columns = ["admiration", "amusement", "anger", "annoyance", "approval", "caring", "confusion", "curiosity", "desire", "disappointment", "disapproval", "disgust", "embarrassment", "excitement", "fear", "gratitude", "grief", "joy", "love", "nervousness", "optimism", "pride", "realization", "relief", "remorse", "sadness", "surprise", "neutral"]
 		self.generic_emotions_list = ['anger', 'revulsion', 'joy', 'passion', 'sadness', 'surprise', 'neutral']
@@ -69,29 +69,44 @@ class DataSet:
 			}
 		}
 
-	def preprocessing_data(self, generate_from_scratch=False, data_augmentation=False, force_equality=False):
-		if generate_from_scratch and data_augmentation:
-			raise ValueError("Augmented Data created before using GPT prompt, get it from full_data")
+	# def preprocessing_data(self, generate_from_scratch=False, data_augmentation=False, force_equality=False):
+	# 	if generate_from_scratch and data_augmentation:
+	# 		raise ValueError("Augmented Data created before using GPT prompt, get it from full_data")
+	# 	if data_augmentation:
+	# 		data_file_path = "../data/augmented_data/augmented_data_complete.csv"
+	# 	else:
+	# 		data_file_path = "../data/full_dataset/raw_emotions_data.csv"
+	#
+	# 	if generate_from_scratch:
+	# 		self.remove_unclear_samples()
+	# 		self.add_emotion_label(generalize_emotions=False)
+	# 	else:
+	# 		self.data = pd.read_csv(data_file_path)
+	# 		self.data = self.data.sample(frac=1).reset_index(drop=True)
+	# 		self.labels = self.data['Emotion'].values.tolist()
+	# 		self.texts = self.data['text'].values.tolist()
+	# 		self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(
+	# 			self.generic_emotions_list)
+	# 		for label in self.labels:
+	# 			self.emotions_dict[self.generic_emotions_list[label]]["samples_num"] += 1
+	#
+	# 	if force_equality:
+	# 		min_samples = min(self.count_labels(to_stdout=False))
+
+	def preprocessing_data(self, data_augmentation=False):
 		if data_augmentation:
 			data_file_path = "../data/augmented_data/augmented_data_complete.csv"
 		else:
-			data_file_path = "../data/full_dataset/origin_data_proccessed.csv"
+			data_file_path = "../data/full_dataset/raw_emotions_data.csv"
 
-		if generate_from_scratch:
-			self.remove_unclear_samples()
-			self.add_emotion_label(generalize_emotions=False)
-		else:
-			self.data = pd.read_csv(data_file_path)
-			self.data = self.data.sample(frac=1).reset_index(drop=True)
-			self.labels = self.data['Emotion'].values.tolist()
-			self.texts = self.data['text'].values.tolist()
-			self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(
-				self.generic_emotions_list)
+		self.data = pd.read_csv(data_file_path)
+		self.data = self.data.sample(frac=1).reset_index(drop=True)
+		self.labels = self.data['Emotion'].values.tolist()
+		self.texts = self.data['text'].values.tolist()
+		self.num_classes = len(self.generic_emotions_list) if self.generalize_emotions_flag else len(self.class_columns)
+		if self.generalize_emotions_flag:
 			for label in self.labels:
 				self.emotions_dict[self.generic_emotions_list[label]]["samples_num"] += 1
-
-		if force_equality:
-			min_samples = min(self.count_labels(to_stdout=False))
 
 	def remove_unclear_samples(self):
 		# Remove all the unclear text from the data and the duplicates
@@ -124,7 +139,7 @@ class DataSet:
 		# Save the labels list and texts as tensors
 		self.labels = emotions_list
 		self.texts = self.data['text'].values.tolist()
-		self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(self.generic_emotions_list)
+		self.num_classes = len(self.generic_emotions_list) if self.generalize_emotions_flag else len(self.class_columns)
 
 	def count_labels(self, to_stdout=True):
 		if self.generalize_emotions_flag:
@@ -144,11 +159,7 @@ class DataSet:
 		return num_samples_list
 
 	def tokenizer(self):
-		self.tokenized_inputs = self.tokenizer.batch_encode_plus(self.texts, add_special_tokens=True,
-															return_attention_mask=True, pad_to_max_length=True,
-															truncation=True,
-															max_length=min(self.get_max_text_length(), 512),
-															return_tensors='pt')
+		self.tokenized_inputs = self.tokenizer.batch_encode_plus(self.texts, add_special_tokens=True, return_attention_mask=True, pad_to_max_length=True, truncation=True, max_length=512, return_tensors='pt')
 
 	def split_train_val_data(self, val_size=0.15):
 		dataset = TensorDataset(torch.tensor(self.tokenized_inputs['input_ids']),

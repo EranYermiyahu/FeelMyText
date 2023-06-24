@@ -55,33 +55,36 @@ if __name__ == '__main__':
 
     tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
     tokenizer.save_pretrained("./tokenizer")
-
+    test_loader = create_test_loader(tokenizer)
     dataset = DataSet(tokenizer, path_to_data='../data/full_dataset/raw_emotions_data.csv')
-    dataset.preprocessing_data(generate_from_scratch=False, data_augmentation=True, force_equality=False)
+    dataset.preprocessing_data(data_augmentation=False)
     dataset.count_labels()
-    dataset.tokenizer()
+    dataset.tokenized_inputs = tokenizer.batch_encode_plus(dataset.texts, add_special_tokens=True,
+                                                             return_attention_mask=True, pad_to_max_length=True,
+                                                             truncation=True, max_length=512, return_tensors='pt')
     train_dataset, val_dataset = dataset.split_train_val_data()
     train_loader, val_loader = dataset.create_data_loaders(train_dataset, val_dataset, BATCH_SIZE)
 
     accuracy_list = []
     model_names = ["NoAug_RoBerta_FT", "NoAug_RoBerta_FT_MLP"]
-    for dp in DROPOUT:
-
-        # model = EmotionClassifier(dataset.num_classes, dropout, feature_extracting=True)
-        model = RobertaForSequenceClassification.from_pretrained(
-            'roberta-base',
-            num_labels=dataset.num_classes,
-            output_attentions=False,
-            output_hidden_states=False,
-            dropout=dp
-        )
-        trainer = Trainer(model, train_loader, val_loader, device, BATCH_SIZE, LR, EPOCHS)
-        trainer.train()
-        accuracy = trainer.calculate_accuracy(test_loader)
-        accuracy_list.append(accuracy)
-        train_accuracy = trainer.calculate_accuracy(train_loader, early_stop=10)
-        print(f"For dp {dp} the model accuracy on test is {accuracy} and on train is {train_accuracy}")
-        trainer.save_model(f"../checkpoints/model_dp_{dp}")
+    model_name_inferance = "RoBerta_inferance"
+    model = RobertaForSequenceClassification.from_pretrained(
+        'roberta-base',
+        num_labels=dataset.num_classes,
+        output_attentions=False,
+        output_hidden_states=False,
+        dropout=dp
+    )
+    # model = EmotionClassifier(dataset.num_classes, dropout, feature_extracting=True)
+    trainer = Trainer(model, train_loader, val_loader, device, BATCH_SIZE, LR, EPOCHS)
+    accuracy = trainer.calculate_accuracy(test_loader)
+    print(accuracy)
+    # trainer.train()
+    # accuracy = trainer.calculate_accuracy(test_loader)
+    # accuracy_list.append(accuracy)
+    # train_accuracy = trainer.calculate_accuracy(train_loader, early_stop=10)
+    # print(f"For dp {dp} the model accuracy on test is {accuracy} and on train is {train_accuracy}")
+    # trainer.save_model(f"../checkpoints/model_dp_{dp}")
 
 
 
