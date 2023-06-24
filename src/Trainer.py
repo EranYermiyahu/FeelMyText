@@ -5,15 +5,17 @@ from torch import nn
 from torch.optim.lr_scheduler import StepLR
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader
+from transformers import get_linear_schedule_with_warmup, AdamW
 
 
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, device, batch_size, epochs, learning_rate):
+    def __init__(self, model, train_loader, val_loader, device, batch_size, learning_rate, epochs):
         self.device = device
         self.model = model.to(self.device)
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.batch_size = batch_size
+        self.epochs = epochs
         self.epochs =epochs
         # self.attention_mask = attention_mask
         self.optimizer = AdamW(self.model.parameters(), lr=learning_rate, eps=1e-8)
@@ -23,6 +25,7 @@ class Trainer:
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer, num_warmup_steps=0,
                                                          num_training_steps=len(train_loader) * self.epochs)
         self.criterion = nn.CrossEntropyLoss()
+
 
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)
