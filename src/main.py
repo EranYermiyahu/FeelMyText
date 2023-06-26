@@ -137,9 +137,10 @@ if __name__ == '__main__':
         accuracy = trainer.calculate_accuracy(test_loader)
         statistics_dict[mod_name]['Test Accuracy'] = accuracy
         trainer.save_model(f"../checkpoints/{mod_name}.pth")
-        stat_path = f"../History/{mod_name}_stats.pickle"
-        with open(stat_path, 'wb') as file:
-            pickle.dump(statistics_dict, file)
+    
+    stat_path = f"../History/models_stats.pickle"
+    with open(stat_path, 'wb') as file:
+        pickle.dump(statistics_dict, file)
 
 
 
