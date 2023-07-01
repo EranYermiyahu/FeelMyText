@@ -27,7 +27,8 @@ However, the process of generalization alone did not completely balance the data
 Through meticulous implementation of these techniques, we successfully created a final dataset that consists of 9396 samples for each of the 7 primary labels. This equalized distribution ensures that no particular label dominates the dataset, providing a solid foundation for our subsequent analyses and model training.
 
 By striving for an equal number of samples per label, we have enhanced the reliability of our dataset. This balance will not only prevent biases during model training but also enable the model to learn effectively across all label categories. With a robust and unbiased dataset, we can confidently proceed with our project, knowing that our results will be representative and dependable.
-![image](https://github.com/EranYermiyahu/FeelMyText/assets/73947067/b62a65f5-645a-4b20-bfe1-1626dc06c73b)
+
+![image](https://github.com/EranYermiyahu/FeelMyText/assets/73947067/b3ecf406-be9d-4070-b83b-2203446077fa)
 ![image](https://github.com/EranYermiyahu/FeelMyText/assets/73947067/2a2a183a-2bdf-4b86-b6cd-9966aecbd168)
 
 ## Model Architecture
