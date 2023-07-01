@@ -6,10 +6,11 @@ from torch.optim.lr_scheduler import StepLR
 from transformers import AdamW, get_linear_schedule_with_warmup
 from torch.utils.data import DataLoader
 from transformers import get_linear_schedule_with_warmup, AdamW
+import optuna
 
 
 class Trainer:
-    def __init__(self, model, train_loader, val_loader, device, batch_size, learning_rate, epochs):
+    def __init__(self, model, train_loader, val_loader, device, batch_size, learning_rate, epochs, optuna=False, trial=None):
         self.device = device
         self.model = model.to(self.device)
         self.train_loader = train_loader
@@ -22,6 +23,7 @@ class Trainer:
         self.scheduler = get_linear_schedule_with_warmup(self.optimizer, num_warmup_steps=0,
                                                          num_training_steps=len(train_loader) * self.epochs)
         self.criterion = nn.CrossEntropyLoss()
+        self.trial = trial
 
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)
@@ -47,6 +49,13 @@ class Trainer:
             self.train_losses_list.append(epoch_loss)
             epoch_val_acc = self.validate()
             self.val_acc_list.append(epoch_val_acc)
+
+            if self.trial is not None:
+                self.trial.report(epoch_val_acc, epoch)
+                # Handle pruning based on the intermediate value.
+                if self.trial.should_prune():
+                    raise optuna.TrialPruned()
+
         return self.train_losses_list, self.val_acc_list
 
     def validate(self):
