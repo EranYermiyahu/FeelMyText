@@ -1,5 +1,3 @@
-# FeelMyText
-
 <h1 align="center">FeelMyText : Emotion Classifier From Text Using Data Augmentations</h1>
 <h2 align="center">046211 - Deep Learning, The Faculty of Electrical and Computer Engineering, Technion - Israeli Institute of Technology
 </h2> 
