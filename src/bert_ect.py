@@ -1,12 +1,11 @@
 from transformers import BertModel
-from transformers import XLNetForSequenceClassification, BertForSequenceClassification, RobertaForSequenceClassification, GPT2ForSequenceClassification
-from transformers import AutoModel
+from transformers import BertForSequenceClassification, RobertaForSequenceClassification, GPT2ForSequenceClassification
 import torch.nn as nn
 
 
 
 class EmotionClassifier(nn.Module):
-    def __init__(self, num_classes, dropout, is_roberta=True, feature_extracting=False, mlp_enable=False):
+    def __init__(self, num_classes=7, dropout=0.1, is_roberta=True, feature_extracting=False, mlp_enable=False):
         super(EmotionClassifier, self).__init__()
         # self.bert = BertModel.from_pretrained('bert-base-uncased')
         if mlp_enable:
@@ -27,14 +26,16 @@ class EmotionClassifier(nn.Module):
                 output_attentions=False,
                 output_hidden_states=False)
         else:
-            self.model = GPT2ForSequenceClassification.from_pretrained(
-                'gpt2',
+            self.model = BertForSequenceClassification.from_pretrained(
+                'bert-base-uncased',
                 num_labels=ptm_output_dim)
 
-
         if feature_extracting:
-            for param in self.model.parameters():
-                param.requires_grad = False  # Freeze model parameters
+            for name, param in self.model.named_parameters():
+                if name.startswith('classifier'):  # Unfreeze the last layer
+                    param.requires_grad = True
+                else:  # Freeze all other parameters
+                    param.requires_grad = False
 
     def forward(self, input_ids, attention_mask):
         outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
@@ -46,6 +47,8 @@ class EmotionClassifier(nn.Module):
         pooled_out1 = self.drop(out1)
         output = self.out(pooled_out1)
         return output
+
+
     
 
 # class EmotionClassifier(nn.Module):
