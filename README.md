@@ -49,3 +49,12 @@ Overall, the combination of the RoBERTa pre-trained model and the MLP classifier
 
 <img width="663" alt="image" src="https://github.com/EranYermiyahu/FeelMyText/assets/73947067/5724357a-d338-4ca4-ac51-929f3e2b0331">
 
+
+## How to use FeelMyText?
+
+Please execute the code in src/gini.py
+This will launch an interface for interacting with the model. Insert a sentence and FeelMytext will try to guess your feelings!
+
+```
+./src/gini.py
+```
