@@ -95,9 +95,9 @@ class DataSet:
 
 	def preprocessing_data(self, data_augmentation=False):
 		if data_augmentation:
-			data_file_path = "../data/augmented_data/augmented_data_complete.csv"
+			data_file_path = "../data/augmented_data/clean_aug_data/real_augmented_clipped_dataset.csv"
 		else:
-			data_file_path = "../data/full_dataset/raw_emotions_data.csv"
+			data_file_path = "../data/unique_data/raw_emotions_data.csv"
 
 		self.data = pd.read_csv(data_file_path)
 		self.data = self.data.sample(frac=1).reset_index(drop=True)
@@ -186,6 +186,11 @@ class DataSet:
 
 	def print_lines(self):
 		print(self.data.shape[0])
+
+	def debug_rows(self):
+		for i, line in enumerate(self.texts):
+			if type(line) is not str:
+				print(i)
 
 
 

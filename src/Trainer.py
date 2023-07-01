@@ -25,7 +25,7 @@ class Trainer:
 
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)
-        outputs = outputs.logits
+        # outputs = outputs.logits
         loss = self.criterion(outputs, labels)
         return outputs, loss
 
