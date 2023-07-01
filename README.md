@@ -45,5 +45,6 @@ This architecture combining RoBERTa with an MLP network allows us to leverage th
 Throughout the project, we fine-tuned the RoBERTa model using the labeled data, adjusting the model's weights to optimize its performance for our specific classification task. By fine-tuning the model on our dataset, we aimed to enhance its ability to understand the nuances and patterns specific to our labeled data.
 
 Overall, the combination of the RoBERTa pre-trained model and the MLP classifier enabled us to build a robust and effective classification system, capable of accurately predicting the most likely label for a given input text based on the probabilities obtained from the model's final layers.
+
 <img width="663" alt="image" src="https://github.com/EranYermiyahu/FeelMyText/assets/73947067/5724357a-d338-4ca4-ac51-929f3e2b0331">
 
