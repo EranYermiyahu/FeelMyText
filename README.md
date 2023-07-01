@@ -30,3 +30,20 @@ By striving for an equal number of samples per label, we have enhanced the relia
 ![image](https://github.com/EranYermiyahu/FeelMyText/assets/73947067/b62a65f5-645a-4b20-bfe1-1626dc06c73b)
 ![image](https://github.com/EranYermiyahu/FeelMyText/assets/73947067/2a2a183a-2bdf-4b86-b6cd-9966aecbd168)
 
+## Model Architecture
+
+In our project, we employed the RoBERTa pre-trained model as the backbone of our classification system. RoBERTa, short for "Robustly Optimized BERT approach," is a state-of-the-art language model that has been trained on a massive amount of diverse text data. By utilizing this powerful pre-trained model, we leveraged its ability to understand and extract meaningful representations from natural language.
+
+To adapt RoBERTa for our specific task of multi-label classification, we incorporated a Multi-Layer Perceptron (MLP) network on top of the model's outputs. The MLP network acts as a classifier, taking the RoBERTa embeddings as input and transforming them into predictions for each of the 7 labels in our dataset.
+
+At the final layers of our model, we employed a softmax activation function to obtain probabilities for each label. This activation function ensures that the predicted probabilities sum up to 1, allowing us to interpret the outputs as probabilities of each label being present in the given input text.
+
+To determine the final classification, we selected the label with the highest probability as the predicted label for a particular input. By choosing the label with the highest probability, we aimed to provide a single, most likely prediction for each text sample.
+
+This architecture combining RoBERTa with an MLP network allows us to leverage the power of the pre-trained language model while tailoring it to our specific classification task. By employing this approach, we aimed to achieve accurate and reliable predictions for the 7 labels in our dataset.
+
+Throughout the project, we fine-tuned the RoBERTa model using the labeled data, adjusting the model's weights to optimize its performance for our specific classification task. By fine-tuning the model on our dataset, we aimed to enhance its ability to understand the nuances and patterns specific to our labeled data.
+
+Overall, the combination of the RoBERTa pre-trained model and the MLP classifier enabled us to build a robust and effective classification system, capable of accurately predicting the most likely label for a given input text based on the probabilities obtained from the model's final layers.
+<img width="663" alt="image" src="https://github.com/EranYermiyahu/FeelMyText/assets/73947067/5724357a-d338-4ca4-ac51-929f3e2b0331">
+
