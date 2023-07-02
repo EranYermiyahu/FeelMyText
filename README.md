@@ -49,7 +49,15 @@ Overall, the combination of the RoBERTa pre-trained model and the MLP classifier
 
 <img width="663" alt="image" src="https://github.com/EranYermiyahu/FeelMyText/assets/73947067/5724357a-d338-4ca4-ac51-929f3e2b0331">
 
-
+## Files
+```
+src/                     
+  main.py       # Main function
+  dataset.py    # Dataset class
+  bert_ect.py   # Model Class
+  Trainer.py    # Trainer Class
+  Gini.py       # Gini Class
+```
 ## How to use FeelMyText?
 
 Please execute the code in src/gini.py
