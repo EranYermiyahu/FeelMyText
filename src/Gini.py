@@ -5,13 +5,14 @@ from transformers import BertTokenizer, XLNetTokenizer, RobertaTokenizer
 
 class Gini:
     def __init__(self, tokenizer, device, model, checkpoint_path=None):
-        if checkpoint_path is None:
-            self.model = model
-        else:
-            self.model = model.load_state_dict(torch.load(checkpoint_path))
-        self.device= device
+        self.device = device
         self.tokenizer = tokenizer
         self.generic_emotions_list = ['anger', 'revulsion', 'joy', 'passion', 'sadness', 'surprise', 'neutral']
+
+        if checkpoint_path is not None:
+            model.load_state_dict(torch.load(checkpoint_path))
+        self.model = model.to(device)
+        self.model.eval()
 
     def label_to_emotion(self, label):
         return self.generic_emotions_list[label]
@@ -33,8 +34,8 @@ class Gini:
         with torch.no_grad():
             outputs = self.model(input_ids, attention_mask=attention_mask)
 
-        logits = outputs.logits
-        probabilities = torch.softmax(logits, dim=1)
+        # logit = outputs.logit
+        probabilities = torch.softmax(outputs, dim=1)
         predicted_label = torch.argmax(probabilities, dim=1).item()
         predicted_emotion = self.label_to_emotion(predicted_label)
 
@@ -48,4 +49,8 @@ if __name__ == '__main__':
     model_path = '../checkpoints/Aug_RoBerta_FT.pth'
     model = EmotionClassifier(7, is_roberta=True, mlp_enable=False)
     gini = Gini(roberta_tokenizer, device, model, model_path)
+    while True:
+        sentence = input("Tell me something:\n")
+        feeling, confidence = gini.emotion(sentence)
+        print(f"I feel you are in : {feeling}. Im sure with {confidence * 100}%")
 

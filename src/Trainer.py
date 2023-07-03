@@ -24,6 +24,7 @@ class Trainer:
                                                          num_training_steps=len(train_loader) * self.epochs)
         self.criterion = nn.CrossEntropyLoss()
         self.trial = trial
+        self.is_optuna = optuna
 
     def forward_pass(self, input_ids, attention_mask, labels):
         outputs = self.model(input_ids, attention_mask)
@@ -37,6 +38,10 @@ class Trainer:
             epoch_loss = 0.0
             progress_bar = tqdm(self.train_loader, desc=f"Training Epoch {epoch+1}")
             for i, (input_ids, attention_mask, labels) in enumerate(progress_bar):
+                # Early kill in optuna
+                if self.is_optuna:
+                    if i % 5:
+                        continue
                 input_ids, attention_mask, labels = input_ids.to(self.device), attention_mask.to(self.device), labels.to(self.device)
                 self.optimizer.zero_grad()
                 outputs, loss = self.forward_pass(input_ids, attention_mask, labels)
@@ -50,11 +55,12 @@ class Trainer:
             epoch_val_acc = self.validate()
             self.val_acc_list.append(epoch_val_acc)
 
-            if self.trial is not None:
-                self.trial.report(epoch_val_acc, epoch)
-                # Handle pruning based on the intermediate value.
-                if self.trial.should_prune():
-                    raise optuna.TrialPruned()
+            if self.is_optuna:
+                if self.trial is not None:
+                    self.trial.report(epoch_val_acc, epoch)
+                    # Handle pruning based on the intermediate value.
+                    if self.trial.should_prune():
+                        raise optuna.TrialPruned()
 
         return self.train_losses_list, self.val_acc_list
 

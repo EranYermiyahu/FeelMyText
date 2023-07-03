@@ -10,14 +10,6 @@ from sklearn.model_selection import train_test_split
 
 class DataSet:
 	def __init__(self, tokenizer, path_to_data="../data/full_dataset/goemotions_1.csv"):
-	#def __init__(self, path_to_data="data/reduced_dataset/goemotions_small.csv"):
-		# csv_data_list = glob.glob(path_to_data + '*.csv')
-		# self.dataframes = []
-		# for path in csv_data_list:
-		# 	print(path)
-		# 	df = pd.read_csv(path)
-		# 	self.dataframes.append(df)
-		# self.data = pd.concat(self.dataframes)
 		self.data = pd.read_csv(path_to_data)
 		self.tokenizer = tokenizer
 		self.labels = None
@@ -69,30 +61,6 @@ class DataSet:
 			}
 		}
 
-	# def preprocessing_data(self, generate_from_scratch=False, data_augmentation=False, force_equality=False):
-	# 	if generate_from_scratch and data_augmentation:
-	# 		raise ValueError("Augmented Data created before using GPT prompt, get it from full_data")
-	# 	if data_augmentation:
-	# 		data_file_path = "../data/augmented_data/augmented_data_complete.csv"
-	# 	else:
-	# 		data_file_path = "../data/full_dataset/raw_emotions_data.csv"
-	#
-	# 	if generate_from_scratch:
-	# 		self.remove_unclear_samples()
-	# 		self.add_emotion_label(generalize_emotions=False)
-	# 	else:
-	# 		self.data = pd.read_csv(data_file_path)
-	# 		self.data = self.data.sample(frac=1).reset_index(drop=True)
-	# 		self.labels = self.data['Emotion'].values.tolist()
-	# 		self.texts = self.data['text'].values.tolist()
-	# 		self.num_classes = len(self.class_columns) if self.generalize_emotions_flag else len(
-	# 			self.generic_emotions_list)
-	# 		for label in self.labels:
-	# 			self.emotions_dict[self.generic_emotions_list[label]]["samples_num"] += 1
-	#
-	# 	if force_equality:
-	# 		min_samples = min(self.count_labels(to_stdout=False))
-
 	def preprocessing_data(self, data_augmentation=False):
 		if data_augmentation:
 			data_file_path = "../data/augmented_data/clean_aug_data/real_augmented_clipped_dataset.csv"
@@ -121,7 +89,6 @@ class DataSet:
 		emotions_list = []
 		emotions_start_index = 8
 		# For each text, get the relevant emotion. If there are more than one, choose the first one
-		# ########### Need to explain it on presentation or compare to duplicate scenario
 		for index, row in self.data.iterrows():
 			columns_with_value_one = self.data.columns[emotions_start_index:][row[emotions_start_index:] == 1].tolist()
 			# create a duplication case afterwards
