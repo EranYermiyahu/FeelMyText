@@ -15,26 +15,32 @@ from transformers import BertTokenizer, XLNetTokenizer, RobertaTokenizer, GPT2To
 from Model import TransformerECT
 from torch.utils.data import TensorDataset, DataLoader
 
+#############################################################
+# Global Hyperparameters
+#############################################################
 BATCH_SIZE = 64
 EPOCHS = 10
 LR = 2e-5
 DROPOUT = 0.1
+OPTUNA = False
 
-OPTUNA = True
-
+#############################################################
+# Tokenizers
+#############################################################
 roberta_tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
 roberta_tokenizer.save_pretrained("./robert_tokenizer")
 
 bert_tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 bert_tokenizer.save_pretrained("./bert_tokenizer")
 
-# The trial function, get set of params and train the model
+#############################################################
+# Objective function for optuna 
+#############################################################
 def objective(trial, device):
     n_layers = trial.suggest_int("n_layers", 1, 3)
     dropout = trial.suggest_float("dropout", 0.1, 0.4)
     n_units = trial.suggest_int("n_units", 4, 64)
     lr = trial.suggest_loguniform("lr", 5e-6, 1e-4)
-    # batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
     train_loader, val_loader, num_classes = get_train_val_loaders_from_dataset(data_augmentation=True, is_robert=True)
 
     model = EmotionClassifier(num_classes=num_classes,
@@ -58,7 +64,9 @@ def objective(trial, device):
 
     return val_acc_list[-1]
 
-
+#############################################################
+# Check if running on GPU
+#############################################################
 def check_gpu():
     # Check if GPU is available and being used
     print(torch.cuda.is_available())
@@ -69,18 +77,20 @@ def check_gpu():
     # Get the name of the current GPU
     print(torch.cuda.get_device_name(torch.cuda.current_device()))
 
-# Create specific test benchmark
+#############################################################
+# Benchmarks generation
+#############################################################
 def create_test_loader(path_to_data="../data/full_dataset/origin_data_proccessed.csv", test_p=0.15):
-    if not os.path.exists("../data/unique_data/test_benchmark_data.csv"):
+    if not os.path.exists("../data/nonaugmented_data/test_benchmark_data.csv"):
         raw_dataset = pd.read_csv(path_to_data)
         test_num = int(raw_dataset.shape[0] * test_p)
         random_indices = random.sample(range(len(raw_dataset)), test_num)
         benchmark_test_dataset = raw_dataset.loc[random_indices]
         reduced_dataset = raw_dataset.drop(random_indices)
-        reduced_dataset.to_csv('../data/unique_data/raw_emotions_data.csv', index=False)
-        benchmark_test_dataset.to_csv('../data/unique_data/test_benchmark_data.csv', index=False)
+        reduced_dataset.to_csv('../data/nonaugmented_data/raw_emotions_data.csv', index=False)
+        benchmark_test_dataset.to_csv('../data/nonaugmented_data/test_benchmark_data.csv', index=False)
     else:
-        benchmark_test_dataset = pd.read_csv("../data/unique_data/test_benchmark_data.csv")
+        benchmark_test_dataset = pd.read_csv("../data/nonaugmented_data/test_benchmark_data.csv")
     test_labels = benchmark_test_dataset['Emotion'].values.tolist()
     test_texts = benchmark_test_dataset['text'].values.tolist()
 
@@ -106,13 +116,14 @@ def create_test_loader(path_to_data="../data/full_dataset/origin_data_proccessed
     bert_test_loader = DataLoader(bert_benchmark_test_dataset, batch_size=BATCH_SIZE, shuffle=False)
     return roberta_test_loader, bert_test_loader
 
-# Split the data to train and val regarding the model type
+#############################################################
+# Train and Validation set split and dataloaders generations
+#############################################################
 def get_train_val_loaders_from_dataset(data_augmentation=False, is_robert=False):
     tokenizer = roberta_tokenizer if is_robert else bert_tokenizer
-    dataset = DataSet(tokenizer, path_to_data='../data/unique_data/raw_emotions_data.csv')
+    dataset = DataSet(tokenizer, path_to_data='../data/nonaugmented_data/raw_emotions_data.csv')
     dataset.preprocessing_data(data_augmentation=data_augmentation)
     dataset.count_labels()
-    # dataset.debug_rows()
     dataset.tokenized_inputs = tokenizer.batch_encode_plus(dataset.texts, add_special_tokens=True,
                                                            return_attention_mask=True, padding='max_length',
                                                            truncation=True, max_length=512, return_tensors='pt')
@@ -121,6 +132,9 @@ def get_train_val_loaders_from_dataset(data_augmentation=False, is_robert=False)
     return train_loader, val_loader, dataset.num_classes
 
 
+#############################################################
+# Main function
+#############################################################
 if __name__ == '__main__':
     check_gpu()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -135,6 +149,9 @@ if __name__ == '__main__':
     bert_no_aug_train_loader, bert_no_aug_val_loader, num_classes = get_train_val_loaders_from_dataset()
     bert_aug_train_loader, bert_aug_val_loader, _ = get_train_val_loaders_from_dataset(data_augmentation=True)
 
+    #############################################################
+    # Use Optuna to find optimal Hyperparameters 
+    #############################################################
     if OPTUNA:
         # optuna - find hyperparameters
         sampler = optuna.samplers.TPESampler()
@@ -177,7 +194,9 @@ if __name__ == '__main__':
         fig1 = optuna.visualization.plot_param_importances(study)
         fig1.write_image("../docs/optuna_importance_results.png")
 
-    # in case we dont need the optuna search
+    #############################################################
+    # Load and train all tested models
+    #############################################################
     else:
         # List of models to check, the name is important
         model_names = [
@@ -196,8 +215,7 @@ if __name__ == '__main__':
             feature_extracting = False if "FT" in mod_name else True
             mlp_enable = True if "MLP" in mod_name else False
 
-            # Choose Model and data loaders
-            # Choose between raw/augmented datasets
+            # Choose Model and relevant dataloaders
             if "RoBerta" in mod_name:
                 is_roberta = True
                 test_loader = roberta_test_loader
@@ -239,7 +257,9 @@ if __name__ == '__main__':
         with open(stat_path, 'wb') as file:
             pickle.dump(statistics_dict, file)
 
+    #############################################################
     # This section relevant only for training one specific model
+    #############################################################
     # #### Training the winner ####
     # winner_dict = {}
     # lr = optuna_dict['lr']
