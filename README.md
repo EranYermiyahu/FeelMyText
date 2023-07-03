@@ -64,6 +64,7 @@ src/
 ## How to use FeelMyText?
 
 First, download locally the model to your computer from this OneDrive link:
+https://technionmail-my.sharepoint.com/:u:/r/personal/eeran_campus_technion_ac_il/Documents/Technion/Courses/Semester%20H/046211%20-%20Deep%20Learning/Project/FeelMyText/Aug_RoBerta_FT_MLP.pth?csf=1&web=1&e=ldEhvm
 
 Save the model in a new directory called checkpoints in the following path from the src directory: '../checkpoints/Aug_RoBerta_FT.pth'
 Please execute the code in src/gini.py
@@ -75,6 +76,6 @@ This will launch an interface for interacting with the model. Insert a sentence 
 
 
 
-
+Example video of the model at work:
 https://github.com/EranYermiyahu/FeelMyText/assets/82023584/54fb96b4-a901-4dbb-a40a-66be20fa9728
 
