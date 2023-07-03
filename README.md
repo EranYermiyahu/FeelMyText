@@ -80,5 +80,8 @@ src/
 ```
 
 
-Example video of the model at work:
-https://github.com/EranYermiyahu/FeelMyText/assets/82023584/54fb96b4-a901-4dbb-a40a-66be20fa9728
+
+
+https://github.com/EranYermiyahu/FeelMyText/assets/82023584/3bf965ae-3120-45f2-a84d-ed024e642951
+
+
