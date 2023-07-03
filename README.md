@@ -8,9 +8,12 @@
     Eran Yermiyahu: <a href="http://www.linkedin.com/in/eran-yermiyahu/">LinkedIn</a> , <a href="https://github.com/EranYermiyahu">GitHub</a>
   </p>
 
+## Project Explanation Video (Hebrew)
+https://www.youtube.com/watch?v=ePDFk_Pc8A4
 
 ## Background
 Our primary research objective is to establish a reliable dataset that serves as a fertile ground for training pre-trained transformer encoders capable of effectively classifying emotions within raw textual content. To achieve a dataset of utmost quality, we have employed text augmentation algorithms and meticulously evaluated their impact on both the performance and robustness of the model. Additionally, we seek to investigate the efficacy of leveraging the expressive capabilities of supplementary Multi-Layer Perceptron (MLP) layers atop pre-trained models. We will explore various approaches to transfer learning during the training process and examine the contribution of hyperparameter tuning towards optimizing the model's performance.
+
 
 ## Dataset
 For our research, we have chosen the GoEmotions dataset, which was developed by Google and made publicly available. This dataset serves as our foundation for uncovering the underlying connections that encapsulate emotions within a given text. It comprises a human-annotated collection of 70,000 Reddit comments sourced from popular English-language subreddits, with each comment labeled according to one of 28 distinct emotion categories.
@@ -60,9 +63,18 @@ src/
 ```
 ## How to use FeelMyText?
 
+First, download locally the model to your computer from this OneDrive link:
+
+Save the model in a new directory called checkpoints in the following path from the src directory: '../checkpoints/Aug_RoBerta_FT.pth'
 Please execute the code in src/gini.py
 This will launch an interface for interacting with the model. Insert a sentence and FeelMytext will try to guess your feelings!
 
 ```
 ./src/gini.py
 ```
+
+
+
+
+https://github.com/EranYermiyahu/FeelMyText/assets/82023584/54fb96b4-a901-4dbb-a40a-66be20fa9728
+
