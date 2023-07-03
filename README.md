@@ -79,3 +79,6 @@ src/
   Gini.py       # Gini Class
 ```
 
+
+Example video of the model at work:
+https://github.com/EranYermiyahu/FeelMyText/assets/82023584/54fb96b4-a901-4dbb-a40a-66be20fa9728
